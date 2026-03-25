@@ -13,6 +13,23 @@ import {
 import setAnimations from "./utils/animationUtils";
 import { setProgress } from "../Loading";
 
+function detectWebGLRenderer(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const canvas = document.createElement("canvas");
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      alpha: true,
+      antialias: false,
+      powerPreference: "high-performance",
+    });
+    renderer.dispose();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 const Scene = () => {
   const canvasDiv = useRef<HTMLDivElement | null>(null);
   const hoverDivRef = useRef<HTMLDivElement>(null);
@@ -21,7 +38,15 @@ const Scene = () => {
 
   useEffect(() => {
     let cancelled = false;
-    if (canvasDiv.current) {
+    if (!canvasDiv.current) return;
+
+    // If WebGL is blocked, force loading to finish so the page isn't stuck on a black overlay.
+    if (!detectWebGLRenderer()) {
+      setLoading(100);
+      return;
+    }
+
+    try {
       let rect = canvasDiv.current.getBoundingClientRect();
       let container = { width: rect.width, height: rect.height };
       const aspect = container.width / container.height;
@@ -80,6 +105,11 @@ const Scene = () => {
           }, 2500);
         });
         window.addEventListener("resize", onResize);
+      }).catch((err) => {
+        if (cancelled) return;
+        console.error("Character scene failed to load:", err);
+        // Ensure LoadingProvider finishes even if GLTF load fails.
+        setLoading(100);
       });
 
       let mouse = { x: 0, y: 0 },
@@ -149,6 +179,9 @@ const Scene = () => {
           landingDiv.removeEventListener("touchend", onTouchEnd);
         }
       };
+    } catch (err) {
+      console.error("WebGL failed in Character scene:", err);
+      setLoading(100);
     }
   }, []);
 

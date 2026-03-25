@@ -23,23 +23,17 @@ import {
 function detectWebGL(): boolean {
   if (typeof window === "undefined") return false;
   try {
+    // Some environments report a context exists but still fail later when Three tries to create a renderer.
+    // We proactively create & dispose a dummy renderer to verify it fully works.
     const canvas = document.createElement("canvas");
-    const ctx =
-      canvas.getContext("webgl2", {
-        alpha: true,
-        antialias: false,
-        depth: false,
-        stencil: false,
-        failIfMajorPerformanceCaveat: false,
-      }) ??
-      canvas.getContext("webgl", {
-        alpha: true,
-        antialias: false,
-        depth: false,
-        stencil: false,
-        failIfMajorPerformanceCaveat: false,
-      });
-    return ctx !== null;
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      alpha: true,
+      antialias: false,
+      powerPreference: "high-performance",
+    });
+    renderer.dispose();
+    return true;
   } catch {
     return false;
   }
