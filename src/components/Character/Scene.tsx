@@ -20,6 +20,7 @@ const Scene = () => {
   const { setLoading } = useLoading();
 
   useEffect(() => {
+    let cancelled = false;
     if (canvasDiv.current) {
       let rect = canvasDiv.current.getBoundingClientRect();
       let container = { width: rect.width, height: rect.height };
@@ -45,7 +46,7 @@ const Scene = () => {
 
       let headBone: THREE.Object3D | null = null;
       let screenLight: any | null = null;
-      let mixer: THREE.AnimationMixer;
+      let mixer: THREE.AnimationMixer | undefined;
       let rafId = 0;
 
       const clock = new THREE.Clock();
@@ -61,23 +62,24 @@ const Scene = () => {
       };
 
       loadCharacter().then((gltf) => {
-        if (gltf) {
-          const animations = setAnimations(gltf);
-          hoverDivRef.current && animations.hover(gltf, hoverDivRef.current);
-          mixer = animations.mixer;
-          const characterObj = gltf.scene;
-          loadedCharacter = characterObj;
-          scene.add(characterObj);
-          headBone = characterObj.getObjectByName("spine006") || null;
-          screenLight = characterObj.getObjectByName("screenlight") || null;
-          progress.loaded().then(() => {
-            setTimeout(() => {
-              light.turnOnLights();
-              animations.startIntro();
-            }, 2500);
-          });
-          window.addEventListener("resize", onResize);
-        }
+        if (cancelled || !gltf) return;
+        const animations = setAnimations(gltf);
+        hoverDivRef.current && animations.hover(gltf, hoverDivRef.current);
+        mixer = animations.mixer;
+        const characterObj = gltf.scene;
+        loadedCharacter = characterObj;
+        scene.add(characterObj);
+        headBone = characterObj.getObjectByName("spine006") || null;
+        screenLight = characterObj.getObjectByName("screenlight") || null;
+        progress.loaded().then(() => {
+          if (cancelled) return;
+          setTimeout(() => {
+            if (cancelled) return;
+            light.turnOnLights();
+            animations.startIntro();
+          }, 2500);
+        });
+        window.addEventListener("resize", onResize);
       });
 
       let mouse = { x: 0, y: 0 },
@@ -131,16 +133,17 @@ const Scene = () => {
       };
       animate();
       return () => {
+        cancelled = true;
         clearTimeout(debounce);
         cancelAnimationFrame(rafId);
         scene.clear();
         renderer.dispose();
         window.removeEventListener("resize", onResize);
+        document.removeEventListener("mousemove", onMouseMove);
         if (canvasDiv.current) {
           canvasDiv.current.removeChild(renderer.domElement);
         }
         if (landingDiv) {
-          document.removeEventListener("mousemove", onMouseMove);
           landingDiv.removeEventListener("touchmove", onTouchMove);
           landingDiv.removeEventListener("touchstart", onTouchStart);
           landingDiv.removeEventListener("touchend", onTouchEnd);

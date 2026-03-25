@@ -1,13 +1,18 @@
 import * as THREE from "three";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 let flickerIntervalId: number | null = null;
 let screenLightFlickerTl: gsap.core.Timeline | null = null;
-let charTl1: gsap.core.Timeline | null = null;
-let charTl2: gsap.core.Timeline | null = null;
-let charTl3: gsap.core.Timeline | null = null;
-let mobileCharTl: gsap.core.Timeline | null = null;
 let careerTl: gsap.core.Timeline | null = null;
+
+function scheduleSmootherRefresh() {
+  requestAnimationFrame(() => {
+    ScrollTrigger.refresh();
+  });
+}
 
 export function setCharTimeline(
   character: THREE.Object3D<THREE.Object3DEventMap> | null,
@@ -18,10 +23,7 @@ export function setCharTimeline(
     flickerIntervalId = null;
   }
   screenLightFlickerTl?.kill();
-  charTl1?.kill();
-  charTl2?.kill();
-  charTl3?.kill();
-  mobileCharTl?.kill();
+  screenLightFlickerTl = null;
 
   let intensity: number = 0;
   flickerIntervalId = window.setInterval(() => {
@@ -36,7 +38,6 @@ export function setCharTimeline(
       invalidateOnRefresh: true,
     },
   });
-  charTl1 = tl1;
   const tl2 = gsap.timeline({
     scrollTrigger: {
       trigger: ".about-section",
@@ -46,7 +47,6 @@ export function setCharTimeline(
       invalidateOnRefresh: true,
     },
   });
-  charTl2 = tl2;
   const tl3 = gsap.timeline({
     scrollTrigger: {
       trigger: ".whatIDO",
@@ -56,7 +56,6 @@ export function setCharTimeline(
       invalidateOnRefresh: true,
     },
   });
-  charTl3 = tl3;
   let screenLight: any, monitor: any;
   character?.children.forEach((object: any) => {
     if (object.name === "Plane004") {
@@ -150,14 +149,16 @@ export function setCharTimeline(
           end: "bottom top",
         },
       });
-      mobileCharTl = tM2;
       tM2.to(".what-box-in", { display: "flex", duration: 0.1, delay: 0 }, 0);
     }
   }
+
+  scheduleSmootherRefresh();
 }
 
 export function setAllTimeline() {
   careerTl?.kill();
+  careerTl = null;
   const careerTimeline = gsap.timeline({
     scrollTrigger: {
       trigger: ".career-section",
@@ -214,4 +215,6 @@ export function setAllTimeline() {
       0
     );
   }
+
+  scheduleSmootherRefresh();
 }
