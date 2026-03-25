@@ -124,6 +124,70 @@ body {
   text-transform: uppercase;
 }
 
+.tech-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.techstack-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 180px 24px 56px;
+  box-sizing: border-box;
+}
+
+.techstack-fallback-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 28px 20px;
+  max-width: 640px;
+  width: 100%;
+}
+
+.techstack-fallback-item {
+  margin: 0;
+  text-align: center;
+}
+
+.techstack-fallback-item img {
+  width: 100%;
+  max-width: 88px;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  margin: 0 auto;
+  display: block;
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.45));
+}
+
+.techstack-fallback-item figcaption {
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: rgba(234, 229, 236, 0.72);
+}
+
+.techstack-fallback-note {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  max-width: 520px;
+  padding: 0 16px;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.45;
+  color: rgba(234, 229, 236, 0.4);
+}
+
 @media screen and (min-width: 768px) {
   body {
     --cWidth: 94%;
