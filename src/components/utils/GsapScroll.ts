@@ -1,12 +1,30 @@
 import * as THREE from "three";
 import gsap from "gsap";
 
+let flickerIntervalId: number | null = null;
+let screenLightFlickerTl: gsap.core.Timeline | null = null;
+let charTl1: gsap.core.Timeline | null = null;
+let charTl2: gsap.core.Timeline | null = null;
+let charTl3: gsap.core.Timeline | null = null;
+let mobileCharTl: gsap.core.Timeline | null = null;
+let careerTl: gsap.core.Timeline | null = null;
+
 export function setCharTimeline(
   character: THREE.Object3D<THREE.Object3DEventMap> | null,
   camera: THREE.PerspectiveCamera
 ) {
+  if (flickerIntervalId !== null) {
+    window.clearInterval(flickerIntervalId);
+    flickerIntervalId = null;
+  }
+  screenLightFlickerTl?.kill();
+  charTl1?.kill();
+  charTl2?.kill();
+  charTl3?.kill();
+  mobileCharTl?.kill();
+
   let intensity: number = 0;
-  setInterval(() => {
+  flickerIntervalId = window.setInterval(() => {
     intensity = Math.random();
   }, 200);
   const tl1 = gsap.timeline({
@@ -18,6 +36,7 @@ export function setCharTimeline(
       invalidateOnRefresh: true,
     },
   });
+  charTl1 = tl1;
   const tl2 = gsap.timeline({
     scrollTrigger: {
       trigger: ".about-section",
@@ -27,6 +46,7 @@ export function setCharTimeline(
       invalidateOnRefresh: true,
     },
   });
+  charTl2 = tl2;
   const tl3 = gsap.timeline({
     scrollTrigger: {
       trigger: ".whatIDO",
@@ -36,6 +56,7 @@ export function setCharTimeline(
       invalidateOnRefresh: true,
     },
   });
+  charTl3 = tl3;
   let screenLight: any, monitor: any;
   character?.children.forEach((object: any) => {
     if (object.name === "Plane004") {
@@ -52,7 +73,9 @@ export function setCharTimeline(
       object.material.transparent = true;
       object.material.opacity = 0;
       object.material.emissive.set("#B0F5EA");
-      gsap.timeline({ repeat: -1, repeatRefresh: true }).to(object.material, {
+      screenLightFlickerTl = gsap
+        .timeline({ repeat: -1, repeatRefresh: true })
+        .to(object.material, {
         emissiveIntensity: () => intensity * 8,
         duration: () => Math.random() * 0.6,
         delay: () => Math.random() * 0.1,
@@ -127,12 +150,14 @@ export function setCharTimeline(
           end: "bottom top",
         },
       });
+      mobileCharTl = tM2;
       tM2.to(".what-box-in", { display: "flex", duration: 0.1, delay: 0 }, 0);
     }
   }
 }
 
 export function setAllTimeline() {
+  careerTl?.kill();
   const careerTimeline = gsap.timeline({
     scrollTrigger: {
       trigger: ".career-section",
@@ -142,6 +167,7 @@ export function setAllTimeline() {
       invalidateOnRefresh: true,
     },
   });
+  careerTl = careerTimeline;
   careerTimeline
     .fromTo(
       ".career-timeline",
