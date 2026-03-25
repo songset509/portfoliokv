@@ -157,6 +157,18 @@
   z-index: 2;
 }
 
+.character-fallback-img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  height: auto;
+  z-index: 10;
+  pointer-events: none;
+  user-select: none;
+}
+
 .character-hover {
   position: absolute;
   width: 280px;

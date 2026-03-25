@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import setCharacter from "./utils/character";
 import setLighting from "./utils/lighting";
@@ -36,12 +36,14 @@ const Scene = () => {
   const sceneRef = useRef(new THREE.Scene());
   const { setLoading } = useLoading();
 
+  const webglOk = useMemo(() => detectWebGLRenderer(), []);
+
   useEffect(() => {
     let cancelled = false;
     if (!canvasDiv.current) return;
 
     // If WebGL is blocked, force loading to finish so the page isn't stuck on a black overlay.
-    if (!detectWebGLRenderer()) {
+    if (!webglOk) {
       setLoading(100);
       return;
     }
@@ -187,8 +189,15 @@ const Scene = () => {
 
   return (
     <>
-      <div className="character-container">
+      <div className={`character-container ${webglOk ? "" : "character-loaded"}`}>
         <div className="character-model" ref={canvasDiv}>
+          {!webglOk && (
+            <img
+              className="character-fallback-img"
+              src="/images/preview.png"
+              alt=""
+            />
+          )}
           <div className="character-rim"></div>
           <div className="character-hover" ref={hoverDivRef}></div>
         </div>
